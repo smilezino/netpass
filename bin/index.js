@@ -9,10 +9,7 @@ var program = require('commander');
 
 
 function getConfig(filepath) {
-    if(filepath.charAt(0) != '/') {
-        filepath = path.resolve(__dirname, filepath);
-    }
-    return JSON.parse(fs.readFileSync(filepath))
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, filepath)));
 }
 
 function displayVersion(){
@@ -32,21 +29,29 @@ program
 program
     .command('server')
     .option('-c, --config <filepath>', 'config file path')
-    .option('--domain <domain>', 'server domain')
-    .option('--http-port <http-port>', 'http port')
-    .option('--control-port <control-port>', 'control port')
-    .option('--proxy-port <proxy-port>', 'proxy port')
-    .option('--debug', 'debug mod')
-    .action(function(){
-        console.log(this.httpPort);
-        console.log(this.config);
+    .action(function() {
+        if(typeof  this.config == 'undefined') {
+            console.log('please use config file');
+            process.exit(0);
+        }
+
+        var options = getConfig(this.config);
+
+        server.start(options);
     });
 
 program
     .command('client')
     .option('-c, --config <filepath>', 'config file path')
     .action(function(){
-        console.log(this.config);
+        if(typeof  this.config == 'undefined') {
+            console.log('please use config file');
+            process.exit(0);
+        }
+
+        var options = getConfig(this.config);
+
+        client.start(options);
     });
 
 program.parse(process.argv);
