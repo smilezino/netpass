@@ -5,13 +5,8 @@ client.start({
     serverPort: 10825,
     services: [
         {
-            domain: 'test',
-            forwardIp: 'localhost',
-            forwardPort: 80
-        },
-        {
-            domain: 'ace.com',
-            forwardIp: 'localhost',
+            domain: 'z',
+            forwardIp: '192.168.1.108',
             forwardPort: 80
         },
         {

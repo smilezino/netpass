@@ -20,7 +20,7 @@ function Server(options) {
     _.domains = [];
 
     _.options = {
-        domain: 'tunnel.daleks.top',
+        domain: 'daleks.top',
         httpPort: 10824,
         controlPort: 10825,
         proxyPort: 10826,
@@ -167,6 +167,10 @@ function Server(options) {
             });
 
             req.pipe(http2Request);
+        });
+
+        httpServer.on('error', function(e){
+            log.error('connection error, %j', e);
         });
 
         httpServer.listen(_.options.httpPort, '0.0.0.0', function(){

@@ -1,16 +1,21 @@
 {
-  "server": "tunnel.daleks.top",
+  "server": "daleks.top",
   "serverPort": 10825,
   "services": [
     {
       "domain": "aria2ui",
-      "forwardIp": "192.168.1.132",
+      "forwardIp": "127.0.0.1",
       "forwardPort": 80
     },
     {
       "domain": "aria2",
-      "forwardIp": "192.168.1.132",
+      "forwardIp": "127.0.0.1",
       "forwardPort": 6800
+    },
+    {
+      "domain": "z",
+      "forwardIp": "192.168.1.108",
+      "forwardPort": 80
     }
   ],
   "debug": false
