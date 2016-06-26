@@ -66,7 +66,6 @@ function Server(options) {
             });
             socket.on("error", function(e){
                 log.error('%s:$s error: %j', remoteAddress, remotePort, e);
-                _.handle.close(socket);
             });
 
             //保持长链接
@@ -112,7 +111,6 @@ function Server(options) {
             });
             socket.on("error", function(e){
                 log.error('proxy connect %s:$s error: %j', remoteAddress, remotePort, e);
-                removeService(socket, 'proxy');
             });
 
             //保持长链接
@@ -129,13 +127,9 @@ function Server(options) {
         var httpServer = http.createServer(function(req, res){
             var u = url.parse(req.url);
 
-            log.info('http request url: %s%s', req.headers.host, req.url);
+            var fullUrl = 'http://' + req.headers.host + req.url;
 
-            var fullUrl = req.headers.protocol + '://' + req.headers.host + req.url;
-
-            log.debug('full url: %s', fullUrl);
-
-            var service = findService(req.headers.host);
+            var service = findService(fullUrl);
 
             if(service == null) {
                 res.writeHead(200);
@@ -143,6 +137,8 @@ function Server(options) {
                 res.end();
                 return;
             }
+
+            log.info('proxy request url: %s%s', req.headers.host, req.url);
 
             //headers['x-real-ip'] = req.connection.remoteAddress;
 
@@ -152,6 +148,7 @@ function Server(options) {
 
             var http2Request = http2.raw.request({
                 id: service.id,
+                protocol: 'http:',
                 plain   : true,
                 socket  : service.proxySocket,
                 path    : u.path,
@@ -182,7 +179,9 @@ function Server(options) {
 
             var address = socket.remoteAddress;
 
-            log.debug('register from %s:%s, data: %j', address, socket.remotePort, data);
+            var port = socket.remotePort;
+
+            log.debug('register from %s:%s, data: %j', address, port, data);
 
             if(!Array.isArray(data)) {
                 data = [data];
@@ -201,8 +200,8 @@ function Server(options) {
                 //     data[i]['protocol'] = 'http';
                 // }
                 data[i]['controlSocket'] = socket;
-                data[i].id = (Object.keys(_.clients).length + 1) * 10 + i;
-
+                data[i].id = Math.random().toString(36).substr(2);
+                log.debug('save service domain: %s, id: %s', domain, data[i].id);
                 services.push(data[i]);
                 _.domains.push(domain);
             }
@@ -223,8 +222,10 @@ function Server(options) {
         }
     };
 
-    function findService(domain) {
+    function findService(fullUrl) {
 
+        var u = url.parse(fullUrl);
+        var domain = u.hostname;
         var index = domain.indexOf(_.options.domain);
 
         //options.server 的二级域名
@@ -237,7 +238,6 @@ function Server(options) {
 
             for(var i=0; i<client.length; i++) {
 
-                log.debug('compare domain: %s : %s', domain, client[i].domain);
                 if(domain == client[i].domain) {
                     return client[i];
                 }
@@ -250,11 +250,6 @@ function Server(options) {
     function removeService(socket, type) {
         var address = socket.remoteAddress;
         var services = _.clients[address];
-
-        log.info('remove socket, %s:%s', address, socket.remotePort);
-
-        log.info('services: %j', services);
-        log.info('services length: %d', services.length);
 
         if(Array.isArray(services)) {
             services = services.filter(function(service) {
@@ -272,6 +267,9 @@ function Server(options) {
 
                 return result;
             });
+
+            log.debug('service left length: %d', services.length);
+            log.debug('domain left length: %d', _.domains.length);
 
             _.clients[address] = services;
         }

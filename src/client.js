@@ -57,34 +57,23 @@ function Client(options) {
 
         controlClient.on('close', function(){
             log.info('远程服务器关闭, 10s后重试');
-            setTimeout(function(){
-                _.reconnect();
-            }, 10000);
+            sleep(10);
+            _.reconnect();
         });
 
         controlClient.on('error', function(e){
-            log.info('服务器出错 data: %j, 10s后重试', e);
-            setTimeout(function(){
-                _.reconnect();
-            }, 10000);
+            log.info('服务器出错 data: %j', e);
         });
 
     };
 
     _.reconnect = function(){
-        if(_.connecting) {
-            return;
-        }
-        _.connecting = true;
-
         _.register();
     };
 
     _.connect = function(port) {
         var proxyClient = net.connect(port, _.options.server, function(){
             log.info('连接proxy server成功');
-
-            _.connecting = false;
 
             var serverOpts = {
                 plain : true,
@@ -94,9 +83,14 @@ function Client(options) {
                 }
             };
 
+            
             http2.raw.createServer(serverOpts, function(req, res) {
+
                 var u = url.parse(req.url);
+
                 var domain = req.headers['netpass-domain'];
+
+                log.debug('receive domain: %s', domain);
 
                 var service = findService(domain);
 
@@ -107,6 +101,8 @@ function Client(options) {
                     method   : req.method,
                     headers  : req.headers
                 };
+
+                log.info('proxy request: %s:%s%s', service.forwardIp, service.forwardPort, req.url);
 
                 var proxyRequest = http.request(httpOpts, function(pRes) {
                     var headers = removeDeprecatedHeaders(pRes.headers);
@@ -146,6 +142,14 @@ function Client(options) {
         return null;
     }
 }
+
+function sleep(s) {
+    var e = new Date().getTime() + (s * 1000);
+
+    while (new Date().getTime() <= e) {
+        ;
+    }
+};
 
 module.exports = {
     start: function(options) {
