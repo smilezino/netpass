@@ -1,0 +1,27 @@
+{
+  "name": "natpass",
+  "version": "0.0.1",
+  "description": "Introspected tunnels to localhost HTTP/1.1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bin/index.js server"
+  },
+  "dependencies": {
+    "extend": "*",
+    "tracer": "*",
+    "commander": "~2.9.0"
+  },
+  "bin": {
+    "pangolin": "./bin/index.js"
+  },
+  "author": {
+    "name": "smilezino",
+    "email": "smile.zino@gmail.com"
+  },
+  "contributors": [{
+    "name": "smilezino",
+    "email": "smile.zino@gmail.com"
+  }],
+  "license": "MIT"
+}
