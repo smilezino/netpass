@@ -1,7 +1,7 @@
 var client = require('../src/client');
 
 client.start({
-    serverIp: 'localhost',
+    server: 'daleks.top',
     serverPort: 10825,
     services: [
         {

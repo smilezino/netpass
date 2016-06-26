@@ -1,5 +1,5 @@
 {
-  "serverIp": "tunnel.daleks.top",
+  "server": "tunnel.daleks.top",
   "serverPort": 10825,
   "services": [
     {
